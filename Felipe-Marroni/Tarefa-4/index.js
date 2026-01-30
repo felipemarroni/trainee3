@@ -4,14 +4,18 @@ const express = require('express');
 const app = express();
 
 // Array em memória
-let itens = [];
+let itens = [ {id: 1, nome: "Maça", preco: 1.25},
+  {id: 2, nome: "Banana", preco: 0.90},
+  {id: 3, nome: "Laranja", preco: 1.10} ];
+
+
 
 /* POST /itens */
 app.post('/itens', (req, res) => {
   const { nome, preco } = req.body;
 
   if (!nome || preco == null) {
-    return res.status(400).json({ error: 'Nome e Preco são necessários' });
+    return res.status(400).json({ error: 'Nome e Preço são necessários' });
   }
 
   const item = {

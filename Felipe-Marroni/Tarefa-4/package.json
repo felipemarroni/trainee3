@@ -1,0 +1,23 @@
+{
+  "name": "tarefa-4",
+  "version": "1.0.0",
+  "description": "API REST com Node.js",
+  "homepage": "https://github.com/felipemarroni/trainee3#readme",
+  "bugs": {
+    "url": "https://github.com/felipemarroni/trainee3/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/felipemarroni/trainee3.git"
+  },
+  "license": "ISC",
+  "author": "Felipe Marroni",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo 'ERROR'"
+  },
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}

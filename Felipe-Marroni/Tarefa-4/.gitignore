@@ -1,0 +1,24 @@
+# Node
+node_modules/
+
+# Package
+package-lock.json
+
+# Environment variables
+.env
+
+# Logs
+logs/
+*.log
+
+# Build artifacts
+dist/
+build/
+
+# Test coverage
+coverage/
+
+# Editor / OS
+.vscode/
+.DS_Store
+Thumbs.db

@@ -9,6 +9,4 @@ export class CreateItemDto {
   @Min(0) 
   preco: number;
 
-  @IsNumber()
-  id: number;
 }

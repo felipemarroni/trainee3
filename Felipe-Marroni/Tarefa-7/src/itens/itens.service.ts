@@ -12,7 +12,7 @@ export class ItensService {
     ) {}
 
 
-    create(dto: CreateItemDto): Promise<any> {
+    async create(dto: CreateItemDto): Promise<any> {
         return new Promise((resolve, reject) => {
             const { nome, preco } = dto;
 
@@ -30,7 +30,7 @@ export class ItensService {
         });
     }
 
-    findAll(): Promise<any[]> {
+    async findAll(): Promise<any[]> {
         return new Promise((resolve, reject) => {
             this.db.all(`SELECT * FROM itens`, [], (err, linhas) => {
                 if (err) return reject(err);
@@ -40,7 +40,7 @@ export class ItensService {
     }
 
 
-    findOne(id: number): Promise<any> {
+    async findOne(id: number): Promise<any> {
         return new Promise((resolve, reject) => {
             this.db.get(
                 `SELECT * FROM itens WHERE id = ?`,

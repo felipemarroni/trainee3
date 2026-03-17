@@ -2,8 +2,9 @@ import { Subject, takeUntil, catchError, retry, of, timer } from 'rxjs';
 import { gps$ } from './streams/gps.stream';
 import { pedidos$ } from './streams/pedidos.stream';
 import { alertas$ } from './streams/alertas.stream';
-import{ logComTimestamp, painelEntregador$,
-velocidadeSuspeita$, gpsEnriquecido$, statusCount$, alertaCritico$, emergencia$ } from './operadores/custom.operadores';
+import{ painelEntregador$,
+velocidadeSuspeita$, gpsEnriquecido$, statusCount$, alertaCritico$, emergencia$ } from './utils/simulador';
+import { logComTimestamp } from './operadores/custom.operadores'
 
 const destroy$ = new Subject<void>();
 

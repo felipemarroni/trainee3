@@ -100,11 +100,14 @@ const alertasEventos$ = alertas$.pipe(
     tipo: "alerta" as const,
     entregadorID: alert.entregadorID,
     mensagem: alert.mensagem,
-    severidade: "alta" as const
+    severidade: "alta" as const,
+    timestamp: new Date()
   }))
 )
 
 const emergenciaEventos$ = merge(suspeitoEventos$, alertasEventos$)
+
+const FIVE_SECONDS_MS = 5000
 
 export const emergencia$ = emergenciaEventos$.pipe(
   groupBy(event => event.entregadorID),
@@ -115,18 +118,40 @@ export const emergencia$ = emergenciaEventos$.pipe(
         state.prontoParaEmitir = false
 
         if (event.tipo === "velocidade") {
-          state.ultimaVelocidadeSuspeita = event.velocidade
+          state.ultimaVelocidadeSuspeita = {
+            velocidade: event.velocidade,
+            timestamp: event.timestamp
+          }
 
           if (state.ultimoAlertaAlto) {
-            state.prontoParaEmitir = true
+            const diff =
+              Math.abs(
+                state.ultimoAlertaAlto.timestamp.getTime() -
+                event.timestamp.getTime()
+              )
+            
+            if (diff <= FIVE_SECONDS_MS) {
+              state.prontoParaEmitir = true
+            }
           }
         }
 
         if (event.tipo === "alerta") {
-          state.ultimoAlertaAlto = event.mensagem
+          state.ultimoAlertaAlto = {
+            mensagem: event.mensagem,
+            timestamp: event.timestamp
+        }
 
-          if (state.ultimaVelocidadeSuspeita !== null) {
-            state.prontoParaEmitir = true
+          if (state.ultimaVelocidadeSuspeita) {
+            const diff =
+              Math.abs(
+                event.timestamp.getTime() -
+                state.ultimaVelocidadeSuspeita.timestamp.getTime()
+            )
+
+            if (diff <= FIVE_SECONDS_MS) {
+              state.prontoParaEmitir = true
+            }
           }
         }
 
@@ -134,8 +159,13 @@ export const emergencia$ = emergenciaEventos$.pipe(
         return state
       }, {
         entregadorID: group$.key,
-        ultimaVelocidadeSuspeita: null as number | null,
-        ultimoAlertaAlto: null as null | string | undefined,
+        ultimaVelocidadeSuspeita: null as {
+          velocidade: number
+          timestamp: Date
+        } | null,
+        ultimoAlertaAlto: null as {
+        mensagem: string | undefined
+        timestamp: Date } | null | undefined,
         ultimaAtualizacao: new Date(),
         prontoParaEmitir: false
       }),
@@ -145,7 +175,7 @@ export const emergencia$ = emergenciaEventos$.pipe(
       map(state => ({
         entregadorID: state.entregadorID,
         velocidade: state.ultimaVelocidadeSuspeita!,
-        alerta: state.ultimoAlertaAlto!,
+        alerta: state.ultimoAlertaAlto!.mensagem,
         severidade: "alta" as const,
         ultimaAtualizacao: state.ultimaAtualizacao
       }))

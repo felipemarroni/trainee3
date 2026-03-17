@@ -1,4 +1,4 @@
-import { timer, switchMap, map, of } from "rxjs"
+import { timer, switchMap, map, of, repeat } from "rxjs"
 
 const tiposAlerta = ["atraso", "veiculo_parado", "rota_desviada"] as const
 const severidades = ["baixa", "media", "alta"] as const
@@ -17,5 +17,6 @@ export const alertas$ = of(null).pipe(
         severidade: severidades[Math.floor(Math.random() * severidades.length)],
         entregadorID: `ENT-${Math.floor(Math.random() * 5) + 1}`,
         mensagem: mensagens[Math.floor(Math.random() * mensagens.length)]}
-      })
+      }),
+    repeat()
     )

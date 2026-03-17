@@ -1,4 +1,4 @@
-import { merge, filter, map, scan, retry, catchError, of, tap, mergeMap, MonoTypeOperatorFunction } from "rxjs"
+import { merge, filter, map, scan, retry, catchError, of, tap, mergeMap, MonoTypeOperatorFunction, groupBy } from "rxjs"
 import { gps$ } from "../streams/gps.stream"
 import { pedidos$ } from "../streams/pedidos.stream"
 import { alertas$ } from "../streams/alertas.stream"
@@ -33,57 +33,124 @@ export const gpsEnriquecido$ = gps$.pipe(
   }))
 );
 
-type statusEntregador = { [id: string]: any };
-
 const gpsEventos$ = gps$.pipe(
   map(gps => ({
     entregadorID: gps.entregadorID,
-    tipo: "gps",
-    dado: gps
+    tipo: "gps" as const,
+    lat: gps.lat,
+    lng: gps.lng
   }))
 )
 
 const pedidoEventos$ = pedidos$.pipe(
     retry(3),
-    catchError(() => of({ status: 'falhou', entregadorID: 'SISTEMA' })),
+    catchError(() => of({ status: 'erro', entregadorID: 'SISTEMA' })),
     map(pedido => ({
     entregadorID: pedido.entregadorID,
-    tipo: "pedido",
-    dado: pedido
+    tipo: "pedido" as const,
+    status: pedido.status
   }))
 )
 
 const events$ = merge(gpsEventos$, pedidoEventos$)
 
 export const painelEntregador$ = events$.pipe(
-    scan((acc:statusEntregador, curr:any) => {
+  groupBy(event => event.entregadorID),
 
-    const entregador = curr.entregadorId; 
-    const novo = { ...acc }
-
-
-    const antigo = { ...novo[entregador] }
-
-        if (curr.tipo === "gps") {
-            antigo.ultimaLocalizacao = {
-                lat: curr.lat,
-                lng: curr.lng
-        }
+  mergeMap(group$ =>
+    group$.pipe(
+      scan((state, event) => {
+        if (event.tipo === "gps") {
+          state.ultimaLocalizacao = {
+            lat: event.lat,
+            lng: event.lng
+          }
         }
 
-        if (curr.tipo === "pedido") {
-            antigo.ultimoStatus = curr.status
+        if (event.tipo === "pedido") {
+          state.ultimoStatus = event.status
         }
 
-        antigo.ultimaAtualizacao = new Date()
+        state.ultimaAtualizacao = new Date()
 
-        novo[entregador] = antigo
+        return state
 
-        return novo
+      }, {
+        entregadorID: group$.key,
+        ultimaLocalizacao: null as null | { lat: number; lng: number },
+        ultimoStatus: null as null | string | undefined,
+        ultimaAtualizacao: new Date()
+      })
+    )
+  )
+)
 
-    }, {}),
+const suspeitoEventos$ = velocidadeSuspeita$.pipe(
+  map(gps => ({
+    tipo: "velocidade" as const,
+    entregadorID: gps.entregadorID,
+    velocidade: gps.velocidade,
+    timestamp: gps.timestamp
+  }))
+)
 
-    mergeMap(novo => Object.values(novo))
+const alertasEventos$ = alertas$.pipe(
+  filter(alert => alert.severidade === "alta"),
+  map(alert => ({
+    tipo: "alerta" as const,
+    entregadorID: alert.entregadorID,
+    mensagem: alert.mensagem,
+    severidade: "alta" as const
+  }))
+)
+
+const emergenciaEventos$ = merge(suspeitoEventos$, alertasEventos$)
+
+export const emergencia$ = emergenciaEventos$.pipe(
+  groupBy(event => event.entregadorID),
+
+  mergeMap(group$ =>
+    group$.pipe(
+      scan((state, event) => {
+        state.prontoParaEmitir = false
+
+        if (event.tipo === "velocidade") {
+          state.ultimaVelocidadeSuspeita = event.velocidade
+
+          if (state.ultimoAlertaAlto) {
+            state.prontoParaEmitir = true
+          }
+        }
+
+        if (event.tipo === "alerta") {
+          state.ultimoAlertaAlto = event.mensagem
+
+          if (state.ultimaVelocidadeSuspeita !== null) {
+            state.prontoParaEmitir = true
+          }
+        }
+
+        state.ultimaAtualizacao = new Date()
+        return state
+      }, {
+        entregadorID: group$.key,
+        ultimaVelocidadeSuspeita: null as number | null,
+        ultimoAlertaAlto: null as null | string | undefined,
+        ultimaAtualizacao: new Date(),
+        prontoParaEmitir: false
+      }),
+
+      filter(state => state.prontoParaEmitir),
+
+      map(state => ({
+        entregadorID: state.entregadorID,
+        velocidade: state.ultimaVelocidadeSuspeita!,
+        alerta: state.ultimoAlertaAlto!,
+        severidade: "alta" as const,
+        ultimaAtualizacao: state.ultimaAtualizacao
+      }))
+    )
+  )
 )
 
 export function logComTimestamp<T>(prefixo: string): MonoTypeOperatorFunction<T> {

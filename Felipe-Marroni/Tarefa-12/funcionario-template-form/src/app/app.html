@@ -1,0 +1,182 @@
+<div class="pagina">
+  <div class="container">
+    <header class="header">
+      <h1>{{ titulo }}</h1>
+      <p>
+        Exemplo completo com <strong>Reactive Forms</strong>,
+        <strong>FormArray</strong> (telefones) e
+        <strong>FormRecord</strong> (redes sociais dinâmicas).
+      </p>
+    </header>
+
+    <form [formGroup]="cadastroForm" (ngSubmit)="onSubmit()" class="formulario">
+
+      <!-- DADOS PRINCIPAIS -->
+      <section class="card">
+        <h2>Dados do colaborador</h2>
+
+        <div class="grid">
+          <div class="campo campo-full">
+            <label for="nome">Nome</label>
+            <input id="nome" type="text" formControlName="nome" placeholder="Digite o nome completo" />
+            <small class="erro" *ngIf="campoInvalido('nome')">
+              Nome é obrigatório (mínimo 3 caracteres).
+            </small>
+          </div>
+
+          <div class="campo">
+            <label for="email">E-mail</label>
+            <input id="email" type="email" formControlName="email" placeholder="email@empresa.com" />
+            <small class="erro" *ngIf="campoInvalido('email')">
+              Informe um e-mail válido.
+            </small>
+          </div>
+
+          <div class="campo">
+            <label for="idade">Idade</label>
+            <input id="idade" type="number" formControlName="idade" placeholder="18" />
+            <small class="erro" *ngIf="campoInvalido('idade')">
+              Idade deve estar entre 18 e 100.
+            </small>
+          </div>
+
+          <div class="campo">
+            <label for="cargo">Cargo</label>
+            <input id="cargo" type="text" formControlName="cargo" placeholder="Ex: Desenvolvedor Front-end" />
+            <small class="erro" *ngIf="campoInvalido('cargo')">
+              Cargo é obrigatório.
+            </small>
+          </div>
+
+          <div class="campo">
+            <label for="salario">Salário</label>
+            <input id="salario" type="number" formControlName="salario" placeholder="3000" />
+            <small class="erro" *ngIf="campoInvalido('salario')">
+              Salário mínimo: 1000.
+            </small>
+          </div>
+
+          <div class="campo checkbox">
+            <label>
+              <input type="checkbox" formControlName="ativo" />
+              Colaborador ativo
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- FORMARRAY -->
+      <section class="card">
+        <div class="section-header">
+          <h2>Telefones (FormArray)</h2>
+          <button type="button" class="btn btn-secondary" (click)="adicionarTelefone()">
+            + Adicionar telefone
+          </button>
+        </div>
+
+        <div formArrayName="telefones" class="lista-dinamica">
+          <div class="item-dinamico" *ngFor="let telefone of telefones.controls; let i = index">
+            <div class="campo flex-grow">
+              <label [for]="'telefone-' + i">Telefone {{ i + 1 }}</label>
+              <input
+                [id]="'telefone-' + i"
+                type="text"
+                [formControlName]="i"
+                placeholder="Somente números (10 ou 11 dígitos)"
+              />
+              <small class="erro" *ngIf="telefoneInvalido(i)">
+                Informe um telefone válido com 10 ou 11 dígitos.
+              </small>
+            </div>
+
+            <button
+              type="button"
+              class="btn btn-danger"
+              (click)="removerTelefone(i)"
+              [disabled]="telefones.length === 1"
+            >
+              Remover
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- FORMRECORD -->
+      <section class="card">
+        <div class="section-header">
+          <h2>Redes Sociais (FormRecord)</h2>
+        </div>
+
+        <p class="descricao">
+          Aqui usamos <strong>FormRecord</strong> porque as chaves são dinâmicas
+          (linkedin, github, portfolio, instagram, etc.).
+        </p>
+
+        <div class="adicionar-rede">
+          <div class="campo">
+            <label for="nomeRede">Nome da rede</label>
+            <input
+              id="nomeRede"
+              type="text"
+              [(ngModel)]="novaRedeNome"
+              [ngModelOptions]="{ standalone: true }"
+              placeholder="Ex: portfolio"
+            />
+          </div>
+
+          <div class="campo">
+            <label for="urlRede">URL / usuário</label>
+            <input
+              id="urlRede"
+              type="text"
+              [(ngModel)]="novaRedeUrl"
+              [ngModelOptions]="{ standalone: true }"
+              placeholder="Ex: https://meusite.com"
+            />
+          </div>
+
+          <button type="button" class="btn btn-primary" (click)="adicionarRedeSocial()">
+            + Adicionar rede
+          </button>
+        </div>
+
+        <div class="lista-dinamica">
+          <div class="item-dinamico" *ngFor="let nomeRede of nomesDasRedes">
+            <div class="campo flex-grow">
+              <label [for]="'rede-' + nomeRede">{{ nomeRede | titlecase }}</label>
+              <input
+                [id]="'rede-' + nomeRede"
+                type="text"
+                [formControl]="redesSociais.controls[nomeRede]"
+                placeholder="Informe a URL ou identificador"
+              />
+              <small class="erro" *ngIf="redeInvalida(nomeRede)">
+                Este campo é obrigatório.
+              </small>
+            </div>
+
+            <button
+              type="button"
+              class="btn btn-danger"
+              (click)="removerRedeSocial(nomeRede)"
+            >
+              Remover
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- AÇÕES -->
+      <section class="acoes">
+        <button type="submit" class="btn btn-success">Enviar cadastro</button>
+        <button type="button" class="btn btn-light" (click)="resetarFormulario()">Resetar</button>
+      </section>
+    </form>
+
+    <!-- PREVIEW -->
+    <section class="card preview">
+      <h2>Preview do valor do formulário</h2>
+      <pre>{{ cadastroForm.value | json }}</pre>
+    </section>
+  </div>
+</div>

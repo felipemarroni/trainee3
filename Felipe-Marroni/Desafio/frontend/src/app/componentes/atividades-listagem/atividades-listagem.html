@@ -1,0 +1,55 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Registro de Atividades Físicas</h2>
+
+    <button (click)="onClick()" class="btn btn-primary">
+      + Nova Atividade
+    </button>
+  </div>
+
+  <table class="table table-striped table-hover align-middle">
+    <thead class="table-dark">
+      <tr>
+        <th>Nome da Atividade</th>
+        <th>Descrição</th>
+        <th>Intensidade</th>
+        <th>Tempo</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      @for (atividade of atividades(); track atividade.id) {
+        <tr>
+          <td>{{ atividade.atividade }}</td>
+          <td>{{ atividade.descricao }}</td>
+          <td>{{ atividade.intensidade }}</td>
+          <td>{{ atividade.qtd_tempo }} min</td>
+          <td>
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-primary me-2"
+              [routerLink]="['/editar', atividade.id]"
+            >
+              Editar
+            </button>
+
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-danger"
+              (click)="deletarAtividade(atividade.id!)"
+            >
+              Excluir
+            </button>
+          </td>
+        </tr>
+      } @empty { 
+          <tr>
+            <td colspan="7" class="text-center py-4 text-muted">
+              Nenhum produto cadastrado no sistema.
+            </td>
+          </tr>
+      }
+    </tbody>
+  </table>
+</div>

@@ -1,0 +1,67 @@
+<div class="container mt-4">
+  <h2 class="mb-4">Nova atividade</h2>
+
+  <form [formGroup]="formulario" (ngSubmit)="criar()">
+    <div class="mb-3">
+      <label for="nome" class="form-label">Nome da atividade</label>
+      <input
+        id="nome"
+        name="nome"
+        type="text"
+        class="form-control"
+        formControlName="atividade"
+      />
+    </div>
+    <div class="text-danger mt-1" *ngIf="formulario.get('nome')?.invalid && formulario.get('nome')?.touched">
+      <small>Preencha o nome da atividade</small>
+    </div>
+
+    <div class="mb-3">
+      <label for="descricao" class="form-label">Descrição</label>
+      <textarea
+        id="descricao"
+        name="descricao"
+        class="form-control"
+        type="text"
+        rows="3"
+        formControlName="descricao"
+      ></textarea>
+    </div>
+
+    <div class="mb-3">
+      <label for="intensidade" class="form-label">Intensidade</label>
+      <select
+        id="intensidade"
+        name="intensidade"
+        class="form-select"
+        formControlName="intensidade"
+      >
+        <option value="" disabled selected>Selecione</option>
+        <option *ngFor="let intensidade of intensidades" [value]="intensidade">{{ intensidade }}</option>
+      </select>
+    </div>
+    <div class="text-danger mt-1" *ngIf="formulario.get('intensidade')?.invalid && formulario.get('intensidade')?.touched">
+      <small>Preencha a intensidade da atividade</small>
+    </div>
+
+    <div class="mb-3">
+      <label for="tempo" class="form-label">Tempo (minutos)</label>
+      <input
+        id="qtd_tempo"
+        name="qtd_tempo"
+        type="number"
+        class="form-control"
+        formControlName="qtd_tempo"
+      />
+    </div>
+    <div class="text-danger mt-1" *ngIf="formulario.get('qtd_tempo')?.invalid && formulario.get('qtd_tempo')?.touched">
+      <small>Preencha a quantidade de tempo da atividade</small>
+    </div>
+
+    <button type="submit" class="btn btn-success me-2">Salvar</button>
+
+    <button  type="button" class="btn btn-secondary" (click)="cancelar()">
+      Cancelar
+    </button>
+  </form>
+</div>
